@@ -29,18 +29,16 @@ handle_call(_Message, _From, State) ->
     {reply, [], State}.
 
 handle_cast({ping, {Letters, Numbers}}, State) ->
-    server_process:pong({Letters, Numbers}),
-    server_process:pong({Letters, Numbers}),
+    process_util:send_message(node(), {server_process, pong, [{Letters, Numbers}]}, 2),
     {noreply, State};
 handle_cast({ping, Map}, State) ->
     case process_info(self(), message_queue_len) of
         {message_queue_len, Length} when Length > 2000 ->
             ok;
         {message_queue_len, Length} when Length > 1000 ->
-            server_process:pong(split_map(Map));
+            process_util:send_message(node(), {server_process, pong, [split_map(Map)]}, 1);
         _ ->
-            server_process:pong(split_map(Map)),
-            server_process:pong(split_map(Map))
+            process_util:send_message(node(), {server_process, pong, [split_map(Map)]}, 2)
     end,
     {noreply, State};
 handle_cast(_Message, State) ->

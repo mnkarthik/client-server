@@ -34,10 +34,9 @@ handle_cast({pong, {Vowels, Numbers}}, State) ->
         {message_queue_len, Length} when Length > 2000 ->
             ok;
         {message_queue_len, Length} when Length > 1000 ->
-            client_process:ping(Map);
+            process_util:send_message(node(), {client_process, ping, [Map]}, 1);
         _ ->
-            client_process:ping(Map),
-            client_process:ping(Map)
+            process_util:send_message(node(), {client_process, ping, [Map]}, 2)
     end,
     {noreply, State};
 handle_cast(_Message, State) ->
